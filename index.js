@@ -3,7 +3,7 @@ const config = require("./config.json");
 const fs = require('fs');
 const { allowedNodeEnvironmentFlags } = require("process");
 // const guildID = '802256309302460486' // test server
-const guildID = '669268347736686612' // cosmos server
+const guildID = "669268347736686612"; // cosmos server
 const client = new Discord.Client();
 // Initialize the invite cache
 const invites = {};
@@ -42,9 +42,7 @@ const prefix = "~";
 client.on("message", function(message) { 
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
-  const guild = client.guilds.cache.get(guildID) // get the guild object
-  const member = guild.member(message.author) // convert the User object to a GuildMember!
-  if (!member.hasPermission("ADMINISTRATOR")) return;
+  if (!message.member.hasPermission("ADMINISTRATOR")) return;
 
   const commandBody = message.content.slice(prefix.length);
   const args = commandBody.split(' ');
