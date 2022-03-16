@@ -1,10 +1,14 @@
-const Discord = require("discord.js");
 const config = require("./config.json");
 const fs = require("fs");
-const { allowedNodeEnvironmentFlags } = require("process");
-// const guildID = '802256309302460486' // test server
-const guildID = "669268347736686612"; // cosmos server
-const client = new Discord.Client();
+const { Client, Intents } = require('discord.js');
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_PRESENCES,
+    Intents.FLAGS.GUILD_MEMBERS,
+  ],
+});
 // Initialize the invite cache
 const invites = {};
 
@@ -16,11 +20,11 @@ client.on("ready", async () => {
   await wait(1000);
   console.log(`Logged in as ${client.user.tag}!`);
 
-  client.guilds.cache.forEach(g => {
-    g.fetchInvites().then(guildInvites => {
-      invites[g.id] = guildInvites;
-    });
-  });
+  // client.guilds.cache.forEach(g => {
+  //   g.fetchInvites().then(guildInvites => {
+  //     invites[g.id] = guildInvites;
+  //   });
+  // });
 });
 
 client.on("guildMemberAdd", member => {
@@ -39,7 +43,7 @@ client.on("guildMemberAdd", member => {
 });
 
 const prefix = "~";
-client.on("message", function(message) {
+client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
   if (!message.member.hasPermission("ADMINISTRATOR")) return;
