@@ -46,7 +46,7 @@ const prefix = "~";
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
-  if (!message.member.hasPermission("ADMINISTRATOR")) return;
+  if (!message.member.permissions.has("ADMINISTRATOR")) return;
 
   const commandBody = message.content.slice(prefix.length);
   const args = commandBody.split(" ");
