@@ -1,12 +1,13 @@
 const config = require("./config.json");
 const fs = require("fs");
-const { Client, Intents } = require('discord.js');
+const { Client, Intents, MessageAttachment } = require('discord.js');
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILD_PRESENCES,
     Intents.FLAGS.GUILD_MEMBERS,
+    Intents.FLAGS.GUILD_INVITES,
   ],
 });
 // Initialize the invite cache
@@ -20,26 +21,25 @@ client.on("ready", async () => {
   await wait(1000);
   console.log(`Logged in as ${client.user.tag}!`);
 
-  // client.guilds.cache.forEach(g => {
-  //   g.fetchInvites().then(guildInvites => {
-  //     invites[g.id] = guildInvites;
-  //   });
-  // });
+  client.guilds.cache.forEach(g => {
+    g.invites.fetch().then(guildInvites => {
+      invites[g.id] = guildInvites;
+    });
+  });
 });
 
-client.on("guildMemberAdd", member => {
+client.on("guildMemberAdd", async (member) => {
   // To compare, we need to load the current invite list.
-  member.guild.fetchInvites().then(guildInvites => {
-    // This is the *existing* invites for the guild.
-    const ei = invites[member.guild.id];
+  const newInvites = await member.guild.invites.fetch();
+  // This is the *existing* invites for the guild.
+  const ei = invites[member.guild.id];
 
-    invites[member.guild.id] = guildInvites;
-    // Look through the invites, find the one for which the uses went up.
-    const invite = guildInvites.find(i => ei.get(i.code).uses < i.uses);
-    if (invite !== null) {
-      addRole(member, invite);
-    }
-  });
+  invites[member.guild.id] = newInvites;
+  // Look through the invites, find the one for which the uses went up.
+  const invite = guildInvites.find(i => ei.get(i.code).uses < i.uses);
+  if (invite !== null) {
+    addRole(member, invite);
+  }
 });
 
 const prefix = "~";
@@ -84,9 +84,8 @@ function addRole(member, invite) {
 }
 
 function list(message) {
-  let rawdata = fs.readFileSync("invites.json");
-  let _invites = JSON.parse(rawdata);
-  message.reply(`\`\`\`\n${JSON.stringify(_invites, null, 2)}\n\`\`\``);
+  const attachment = new MessageAttachment('invites.json', 'invites.json');
+  message.reply({ content: '現在のリストです。', files: [attachment] });
 }
 
 function add(message, args) {
